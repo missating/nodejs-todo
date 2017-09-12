@@ -5,6 +5,8 @@ var app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
+//render css files
+app.use(express.static("public"));
 
 //placeholders for added task
 var task = ["buy socks", "practise with nodejs"];

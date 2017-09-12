@@ -1,3 +1,12 @@
+<html>
+<head> 
+<title> ToDo App </title>
+ <link href="https://fonts.googleapis.com/css?family=Lato:100" rel="stylesheet">
+ <link href="/styles.css" rel="stylesheet">
+</head>
+
+<body>
+<div class="container">
 <h2> A Simple ToDo List App </h2>
 
 <form action ="/addtask" method="POST">
@@ -12,3 +21,7 @@
 <% for( var i = 0; i < task.length; i++){ %>
     <li> <%= task[i] %> </li>
 <% } %>
+</div>
+
+</body>
+</html>
