@@ -6,6 +6,7 @@ the to do list for now. This appllication makes use of: </p>
 
 <ul>
 <li> EJS - A simple templating engine that lets you generate HTML markup with plain JS </li>
+
 <li> Body-parser - This extracts the entire body portion of an incoming request stream and exposes it on req.body </li>
 </ul>
 
@@ -15,8 +16,10 @@ the to do list for now. This appllication makes use of: </p>
 <p> How to run the app locally: </p>
 
 <ol>
-<li> Run <code> npm install </code>code> to install all needed dependencies </li>
-<li> Then start the server using <code> node index.js </code>code> </li>
+<li> Run <code> npm install </code> to install all needed dependencies </li>
+
+<li> Then start the server using <code> node index.js </code> </li>
+
 <li> Navigate to your browser <code> http://localhost:3000/ </code> to view the app </li>
 </ol>
 
