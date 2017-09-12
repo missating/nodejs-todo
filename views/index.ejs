@@ -1,0 +1,14 @@
+<h2> A Simple ToDo List App </h2>
+
+<form action ="" method="POST">
+
+<input type="text" name="newtask" placeholder="add new task">
+<button> Add </button>
+
+</form>
+
+<h2> Added Task </h2>
+
+<% for( var i = 0; i < task.length; i++){ %>
+    <li> <%= task[i] %> </li>
+<% } %>
