@@ -1,8 +1,8 @@
 # nodejs-todo
-A simple To Do List application built with Node.js and Express
 
-<p> Nodejs application that let's you add a new task to be completed later. It can only post a new task into the 
-the to do list for now. This appllication makes use of: </p>
+<h2> A simple To Do List application built with Node.js and Express</h2>
+
+<p> Nodejs application that let's you add and complete task on a single page, storing both new and completed task in a different array. This appllication makes use of: </p>
 
 <ul>
 <li> EJS - A simple templating engine that lets you generate HTML markup with plain JS </li>
@@ -10,6 +10,7 @@ the to do list for now. This appllication makes use of: </p>
 <li> Body-parser - This extracts the entire body portion of an incoming request stream and exposes it on req.body </li>
 </ul>
 
+![png](https://github.com/missating/nodejs-todo/blob/master/todo.png?raw=true 'web todo')
 
 <br>
 
@@ -22,4 +23,6 @@ the to do list for now. This appllication makes use of: </p>
 
 <li> Navigate to your browser <code> http://localhost:3000/ </code> to view the app </li>
 </ol>
+
+<p> I wrote a blog post on how to build this app, you can check it out <a href="" target="_blank">Here</a>
 
