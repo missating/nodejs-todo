@@ -36,6 +36,11 @@ app.post("/removetask", function(req, res) {
     }
     res.redirect("/");
 });
+app.post("/cleartodo",function(req,res){
+    task=[];
+    complete=[];
+    res.render("index",{task:task,complete:complete});
+})
 
 //render the ejs and display added task, completed task
 app.get("/", function(req, res) {
