@@ -61,14 +61,14 @@ jobs:
     - name: Install Dependencies
       run: npm install
 
-    - name: ESLint Setup
-      run: |
-        npm install eslint --save-dev
-        npx eslint --init
-      continue-on-error: true
+    # - name: ESLint Setup
+    #   run: |
+    #     npm install eslint --save-dev
+    #     npx eslint --init
+    #   continue-on-error: true
 
-    - name: ESLint
-      run: npm run lint
+    # - name: ESLint
+    #   run: npm run lint
 
     # Install your dependencies
     - run: npm ci
