@@ -60,6 +60,8 @@ jobs:
 
     - name: Install Dependencies
       run: npm install
+    
+    - run: npm ci  
 
     # - name: ESLint Setup
     #   run: |
@@ -67,15 +69,9 @@ jobs:
     #     npx eslint --init
     #   continue-on-error: true
 
-    # - name: ESLint
-    #   run: npm run lint
-
-    # Install your dependencies
-    - run: npm ci
-    # Run ESLint
-    - uses: eslint/github-action@v0  
-      with:
-        githubToken: ${{ secrets.GITHUB_TOKEN }}
+    # - name: Run ESLint
+    #   run: npm run lint   
+   
 
     - name: Prettify code
       uses: creyD/prettier_action@v4.3
