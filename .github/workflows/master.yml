@@ -1,29 +1,3 @@
-# This workflow will build and push a new container image to Amazon ECR,
-# and then will deploy a new task definition to Amazon ECS, when there is a push to the "master" branch.
-#
-# To use this workflow, you will need to complete the following set-up steps:
-#
-# 1. Create an ECR repository to store your images.
-#    For example: `aws ecr create-repository --repository-name my-ecr-repo --region us-east-2`.
-#    Replace the value of the `ECR_REPOSITORY` environment variable in the workflow below with your repository's name.
-#    Replace the value of the `AWS_REGION` environment variable in the workflow below with your repository's region.
-#
-# 2. Create an ECS task definition, an ECS cluster, and an ECS service.
-#    For example, follow the Getting Started guide on the ECS console:
-#      https://us-east-2.console.aws.amazon.com/ecs/home?region=us-east-2#/firstRun
-#    Replace the value of the `ECS_SERVICE` environment variable in the workflow below with the name you set for the Amazon ECS service.
-#    Replace the value of the `ECS_CLUSTER` environment variable in the workflow below with the name you set for the cluster.
-#
-# 3. Store your ECS task definition as a JSON file in your repository.
-#    The format should follow the output of `aws ecs register-task-definition --generate-cli-skeleton`.
-#    Replace the value of the `ECS_TASK_DEFINITION` environment variable in the workflow below with the path to the JSON file.
-#    Replace the value of the `CONTAINER_NAME` environment variable in the workflow below with the name of the container
-#    in the `containerDefinitions` section of the task definition.
-#
-# 4. Store an IAM user access key in GitHub Actions secrets named `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
-#    See the documentation for each action used below for the recommended IAM policies for this IAM user,
-#    and best practices on handling the access key credentials.
-
 name: Deploy to Amazon ECS
 
 on:
@@ -31,14 +5,12 @@ on:
     branches: [ "LajahShrestha-pushToEcs-1" ]
 
 env:
-  AWS_REGION: us-east-1                  # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: nodejs-app           # set this to your Amazon ECR repository name
-  ECS_SERVICE: nodeappservices                 # set this to your Amazon ECS service name
-  ECS_CLUSTER: nodejs-cluster                 # set this to your Amazon ECS cluster name
-  ECS_TASK_DEFINITION: ./nodejs-app-td.json # set this to the path to your Amazon ECS task definition
-                                               # file, e.g. .aws/task-definition.json
-  CONTAINER_NAME: nodejscontainer          # set this to the name of the container in the
-                                               # containerDefinitions section of your task definition
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: nodejs-app
+  ECS_SERVICE: nodeappservices
+  ECS_CLUSTER: nodejs-cluster
+  ECS_TASK_DEFINITION: ./nodejs-app-td.json
+  CONTAINER_NAME: nodejscontainer
 
 permissions:
   contents: read
@@ -47,14 +19,12 @@ jobs:
   deploy:
     name: Build & Deploy
     runs-on: ubuntu-latest
-    # environment: production
 
     steps:
     - name: Checkout
       uses: actions/checkout@v3
       with:
-       token: ${{ secrets.GITHUB_TOKEN }}
-
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Setup Node.js
       uses: actions/setup-node@v2
@@ -62,28 +32,7 @@ jobs:
         node-version: '16'
 
     - name: Install Dependencies
-      run: npm install
-    
-    - run: npm ci  
-
-    # - name: ESLint Setup
-    #   run: |
-    #     npm install eslint --save-dev
-    #     npx eslint --init
-    #   continue-on-error: true
-
-    # - name: Run ESLint
-    #   run: npm run lint   
-   
-
-    # - name: Prettify code
-    #   uses: creyD/prettier_action@v4.3
-    #   with:
-    #     token: ${{ secrets.GITHUB_TOKEN }}
-    #     # This part is also where you can pass other options, for example:
-    #     prettier_options: --write **/*.{js,md}    
-
-    
+      run: npm ci
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
@@ -103,23 +52,19 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
         REPOSITORY: nodejs-app
       run: |
-        # Build a docker container and
-        # push it to ECR so that it can
-        # be deployed to ECS.
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
 
-      
     - name: Run Trivy vulnerability image scanner
-     uses: aquasecurity/trivy-action@master
-     with:
-      image-ref: 'docker.io/my-organization/my-app:${{ github.sha }}'
-      format: 'table'
-      exit-code: '1'
-      ignore-unfixed: true
-      vuln-type: 'os,library'
-      severity: 'CRITICAL,HIGH'
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ steps.build-image.outputs.image }}
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
@@ -128,13 +73,12 @@ jobs:
         task-definition: ${{ env.ECS_TASK_DEFINITION }}
         container-name: ${{ env.CONTAINER_NAME }}
         image: ${{ steps.build-image.outputs.image }}
-       
+
     - name: Show Task Definition Info
       run: |
         echo "Task Definition Revision: ${{ steps.task-def.outputs.task-definition }}"
         echo "Service Name: ${{ env.ECS_SERVICE }}"
         echo "Cluster Name: ${{ env.ECS_CLUSTER }}"
-          
 
     - name: Deploy Amazon ECS task definition
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
