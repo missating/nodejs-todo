@@ -110,6 +110,17 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
+      
+    - name: Run Trivy vulnerability image scanner
+     uses: aquasecurity/trivy-action@master
+     with:
+      image-ref: 'docker.io/my-organization/my-app:${{ github.sha }}'
+      format: 'table'
+      exit-code: '1'
+      ignore-unfixed: true
+      vuln-type: 'os,library'
+      severity: 'CRITICAL,HIGH'
+
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
