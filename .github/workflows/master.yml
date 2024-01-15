@@ -45,13 +45,45 @@ permissions:
 
 jobs:
   deploy:
-    name: Deploy
+    name: Build & Deploy
     runs-on: ubuntu-latest
     # environment: production
 
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: ESLint Setup
+      run: |
+        npm install eslint --save-dev
+        npx eslint --init
+      continue-on-error: true
+
+    - name: ESLint
+      run: npm run lint
+
+    # Install your dependencies
+    - run: npm ci
+    # Run ESLint
+    - uses: eslint/github-action@v0  
+      with:
+        githubToken: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Prettify code
+      uses: creyD/prettier_action@v4.3
+      with:
+        # This part is also where you can pass other options, for example:
+        prettier_options: --write **/*.{js,md}    
+
+    
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
