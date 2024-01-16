@@ -93,7 +93,7 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
         REPOSITORY: nodejs-app
       with:
-        image-ref: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        image-ref: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
         format: 'sarif'
         output: 'trivy-results.sarif'
       continue-on-error: false  
