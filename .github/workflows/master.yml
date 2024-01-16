@@ -40,15 +40,15 @@ jobs:
     
     - run: npm ci  
 
-    # - name: ESLint Setup
-    #   run: |
-    #     npm install eslint --save-dev
-    #     npx eslint --init
-    #   continue-on-error: true
+    - name: ESLint Setup
+      run: |
+        npm install eslint --save-dev
+        npx eslint --init
+      continue-on-error: true
 
-    # - name: Run ESLint
-    #   run: npm run lint 
-    #   continue-on-error: true  
+    - name: Run ESLint
+      run: npm run lint 
+      continue-on-error: true  
    
 
     # - name: Prettify code
@@ -79,7 +79,7 @@ jobs:
         REPOSITORY: nodejs-app
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        # docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
      # Scan the Image
@@ -95,19 +95,19 @@ jobs:
         output: 'trivy-results.sarif'
       continue-on-error: false  
 
-    # - name: Fill in the new image ID in the Amazon ECS task definition
-    #   id: task-def
-    #   uses: aws-actions/amazon-ecs-render-task-definition@v1
-    #   with:
-    #     task-definition: ${{ env.ECS_TASK_DEFINITION }}
-    #     container-name: ${{ env.CONTAINER_NAME }}
-    #     image: ${{ steps.build-image.outputs.image }}
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: ${{ env.ECS_TASK_DEFINITION }}
+        container-name: ${{ env.CONTAINER_NAME }}
+        image: ${{ steps.build-image.outputs.image }}
        
-    # - name: Show Task Definition Info
-    #   run: |
-    #     echo "Task Definition Revision: ${{ steps.task-def.outputs.task-definition }}"
-    #     echo "Service Name: ${{ env.ECS_SERVICE }}"
-    #     echo "Cluster Name: ${{ env.ECS_CLUSTER }}"
+    - name: Show Task Definition Info
+      run: |
+        echo "Task Definition Revision: ${{ steps.task-def.outputs.task-definition }}"
+        echo "Service Name: ${{ env.ECS_SERVICE }}"
+        echo "Cluster Name: ${{ env.ECS_CLUSTER }}"
           
 
     - name: Deploy Amazon ECS task definition
