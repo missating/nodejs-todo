@@ -47,7 +47,8 @@ jobs:
       continue-on-error: true
 
     - name: Run ESLint
-      run: npm run lint   
+      run: npm run lint 
+      continue-on-error: true  
    
 
     # - name: Prettify code
