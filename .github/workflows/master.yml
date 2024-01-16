@@ -88,11 +88,15 @@ jobs:
      # Scan the Image
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
-      continue-on-error: false
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+        REPOSITORY: nodejs-app
       with:
         image-ref: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         format: 'sarif'
         output: 'trivy-results.sarif'
+      continue-on-error: false  
       
     - name: Upload Trivy scan results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v2
