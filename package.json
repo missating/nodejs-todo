@@ -4,7 +4,7 @@
   "description": "A simple to do list app ",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "npx eslint ."
   },
   "author": "Vanessa Ating",
   "license": "ISC",
@@ -12,5 +12,12 @@
     "body-parser": "^1.18.0",
     "ejs": "^2.5.7",
     "express": "^4.15.4"
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-promise": "^6.1.1"
   }
 }

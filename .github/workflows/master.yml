@@ -1,0 +1,119 @@
+name: Deploy to Amazon ECS
+
+on:
+  push:
+    branches: [ "LajahShrestha-pushToEcs-1" ]
+
+env:
+  AWS_REGION: us-east-1                  # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: nodejs-app           # set this to your Amazon ECR repository name
+  ECS_SERVICE: nodeappservices                 # set this to your Amazon ECS service name
+  ECS_CLUSTER: nodejs-cluster                 # set this to your Amazon ECS cluster name
+  ECS_TASK_DEFINITION: ./nodejs-app-td.json # set this to the path to your Amazon ECS task definition
+                                               # file, e.g. .aws/task-definition.json
+  CONTAINER_NAME: nodejscontainer          # set this to the name of the container in the
+                                               # containerDefinitions section of your task definition
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    # environment: production
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+       token: ${{ secrets.GITHUB_TOKEN }}
+
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install Dependencies
+      run: npm install
+    
+    - run: npm ci  
+
+    - name: ESLint Setup
+      run: |
+        npm install eslint --save-dev
+        npx eslint --init
+      continue-on-error: true
+
+    - name: Run ESLint
+      run: npm run lint 
+      continue-on-error: true  
+   
+
+    # - name: Prettify code
+    #   uses: creyD/prettier_action@v4.3
+    #   with:
+    #     token: ${{ secrets.GITHUB_TOKEN }}
+    #     # This part is also where you can pass other options, for example:
+    #     prettier_options: --write **/*.{js,md}    
+
+    
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+        REPOSITORY: nodejs-app
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+     # Scan the Image
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+        REPOSITORY: nodejs-app
+      with:
+        image-ref: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+      continue-on-error: false  
+
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: ${{ env.ECS_TASK_DEFINITION }}
+        container-name: ${{ env.CONTAINER_NAME }}
+        image: ${{ steps.build-image.outputs.image }}
+       
+    - name: Show Task Definition Info
+      run: |
+        echo "Task Definition Revision: ${{ steps.task-def.outputs.task-definition }}"
+        echo "Service Name: ${{ env.ECS_SERVICE }}"
+        echo "Cluster Name: ${{ env.ECS_CLUSTER }}"
+          
+
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ env.ECS_SERVICE }}
+        cluster: ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: true
